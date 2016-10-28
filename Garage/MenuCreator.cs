@@ -150,7 +150,9 @@ namespace Garage
             VehicleListMenu.setdefaultMethod( () => remove(MainGarage, VehicleListMenu));
             
             searchMenu.setHeader(string.Format("Enter search term: (type -1 to remove vehicle number 1 and so on)\nYou can search for types (car/buss/boat/plane/motorcycle)\n\n   {0, -10}{1, -15}{2, -10}{3}", "Type", "RegNr", "Color", "Wheels"));
-            searchMenu.setFooter("0. Back.");
+            searchMenu.setFooter("8. Previews Page.\t\t9. Next Page.\n0. Back.");
+            searchMenu.addMethod("8", searchMenu.PreviewsPage);
+            searchMenu.addMethod("9", searchMenu.NextPage);
 
             searchMenu.setdefaultMethod(() => Search(MainGarage, searchMenu));
             searchMenu.addMethod("0", () => gotoMainMenu(MainGarage, MainMenu));
@@ -189,7 +191,7 @@ namespace Garage
         {
             int number;
             int.TryParse(Menu.ActiveMenu.userinput[0], out number);
-            if (number > 0 && number < 10)
+            if (number > 0 && number < 7)
             {
                 if (garage.VehicleList.Count() > 0 && number <= garage.VehicleList.Count())
                 {
@@ -211,8 +213,7 @@ namespace Garage
 
         private void Search<T>(Garage<T> garage, Menu menu) where T:Vehicle
         {
-            menu.clearList();
-            List<T> searchResult = new List<T>();
+            //List<T> searchResult = garage.SearchResult;
             // User inputs only 1 thing
             if (Menu.ActiveMenu.userinput.Count() == 1)
             {
@@ -220,16 +221,21 @@ namespace Garage
                 int.TryParse(Menu.ActiveMenu.userinput[0], out number);
 
                 if (number > 0)
-                    searchResult = garage.searchVehicle<T>(number);
+                {
+                    garage.SearchResult = garage.searchVehicle<T>(number);
+                    //garage.SearchResult
+                }
                 else if (number == 0)
-                    searchResult = garage.searchVehicle<T>(Menu.ActiveMenu.userinput[0]);
+                {
+                    garage.SearchResult = garage.searchVehicle<T>(Menu.ActiveMenu.userinput[0]);
+                }
                 else
                 {
                     int newnumber = number - number - number;
-                    if (searchResult.Count > 0)
+                    if (menu.menuList.Count > 0)
                     {
-                        garage.removeFromGarage<T>(searchResult[newnumber - 1]);
-                        searchResult.RemoveAt(newnumber - 1);
+                        garage.removeFromGarage<T>(garage.SearchResult[(menu.firstitemindisplay + newnumber) - 1]);
+                        garage.SearchResult.RemoveAt((menu.firstitemindisplay + newnumber) - 1);
                     }
                 }
             }
@@ -246,34 +252,40 @@ namespace Garage
 
                 if (number > 0 && userinput.Count() == 1) // if it's a number and a string
                 {
-                    if(searchResult.Count == 0)
+                    if (garage.SearchResult.Count == 0)
                     {
-                        searchResult = garage.searchVehicle<T>(number, userinput[0]);
+                        garage.SearchResult = garage.searchVehicle<T>(number, userinput[0]);
                     }
                 }
                 else if (number == 0) // if it's 2 strings
                 {
-                    searchResult = garage.searchVehicle<T>(userinput[0], userinput[1]);
+                    garage.SearchResult = garage.searchVehicle<T>(userinput[0], userinput[1]);
                 }
                 else if(number < 0) // if it's a remove from garage from the search menu
                 {
                     int newnumber = number - number - number;
-                    if (searchResult.Count > 0)
+                    if (garage.SearchResult.Count > 0)
                     {
-                        garage.removeFromGarage<T>(searchResult[newnumber - 1]);
-                        searchResult.RemoveAt(newnumber - 1);
+                        garage.removeFromGarage<T>(garage.SearchResult[(menu.firstitemindisplay + newnumber) - 1]);
+                        garage.SearchResult.RemoveAt((menu.firstitemindisplay + newnumber) - 1);
                     }
                 }
             }
-            if (searchResult != null)
+
+            if (garage.SearchResult != null)
             {
+                menu.clearList();
+                //menu.setList(searchResult);
                 int i = 1;
-                foreach (Vehicle V in searchResult)
+                foreach (T V in garage.SearchResult)
                 {
-                    menu.addItem(i + ". " + V.ToString());
+                    menu.addItem(V.ToString());
                     i += 1;
                 }
             }
+            else
+                menu.clearList();
+            //Menu.ActiveMenu = menu;
         }
 
         private bool CheckNumberInput(string input)

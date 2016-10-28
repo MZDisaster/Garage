@@ -22,7 +22,9 @@ namespace Garage
         public Garage<T> createGarage<T>(string name, int spaces) where T:Vehicle
         {
             GarageCount += 1;
-            return new Garage<T>(name, spaces, menuCreator);
+            Garage<T> garage = new Garage<T>();
+            garage.Add(name, spaces, menuCreator);
+            return garage;
         }
 
         public void Load()

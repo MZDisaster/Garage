@@ -14,22 +14,27 @@ namespace Garage
     class Garage <T> where T: Vehicle,
         IEnumerable
     {
-        public List<T> VehicleList { get; set; }
+        public List<T> VehicleList = new List<T>();
         public int spaces { get; set; }
         public string Name;
         public static List<Garage<T>> GaragesList = new List<Garage<T>>();
-        Menu mainmenu;
-        public Garage() { }
+        public List<T> SearchResult = new List<T>();
 
-        public Garage(string name, int Spaces, MenuCreator menuCreator)
+        Menu mainmenu;
+
+        public void Add(string s, int i, MenuCreator mc)
+        {
+            Name = s;
+            spaces = i;
+            GaragesList.Add(this);
+            mainmenu = mc.CreateMenu(this);
+        }
+        /*
+        public Garage()
         {
             VehicleList = new List<T>();
-            Name = name;
-            spaces = Spaces;
-            GaragesList.Add(this);
-            mainmenu = menuCreator.CreateMenu(this);
         }
-
+        */
         public void addToGarage<S>(string color, int wheels, int regnr) where S:Vehicle
         {
             if (VehicleList.Count() < spaces)
@@ -77,6 +82,8 @@ namespace Garage
                 else
                 {
                     Menu.ActiveMenu.ErrorMessage = "Nothing found!";
+                    if(SearchResult.Count()>0)
+                        SearchResult.Clear();
                     return null;
                 }
             }
@@ -93,6 +100,8 @@ namespace Garage
             else
             {
                 Menu.ActiveMenu.ErrorMessage = "Nothing found!";
+                if (SearchResult.Count() > 0)
+                    SearchResult.Clear();
                 return null;
             }
         }
@@ -118,6 +127,8 @@ namespace Garage
                 else
                 {
                     Menu.ActiveMenu.ErrorMessage = "Nothing found!";
+                    if (SearchResult.Count() > 0)
+                        SearchResult.Clear();
                     return null;
                 }
             }
@@ -140,6 +151,8 @@ namespace Garage
                 else
                 {
                     Menu.ActiveMenu.ErrorMessage = "Nothing found!";
+                    if (SearchResult.Count() > 0)
+                        SearchResult.Clear();
                     return null;
                 }
             }
@@ -156,6 +169,8 @@ namespace Garage
                 else
                 {
                     Menu.ActiveMenu.ErrorMessage = "Nothing found!";
+                    if (SearchResult.Count() > 0)
+                        SearchResult.Clear();
                     return null;
                 }
             }
