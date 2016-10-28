@@ -27,6 +27,26 @@ namespace Garage
 
         }
 
+        public void PreviewsPage()
+        {
+            if ((this.firstitemindisplay - 7) > 0)
+            {
+                this.firstitemindisplay -= 7;
+            }
+            else
+            {
+                this.firstitemindisplay = 0;
+            }
+        }
+
+        public void NextPage()
+        {
+            if (this.menuList.Count() > (this.firstitemindisplay + 7))
+            {
+                this.firstitemindisplay += 7;
+            }
+        }
+
         public void setdefaultMethod(Action methodname)
         {
             defaultMethod = methodname;
