@@ -18,6 +18,7 @@ namespace Garage
         public string[] userinput;
         private Action defaultMethod = null;
         public string NAME;
+        public int firstitemindisplay;
 
         public Menu()
         {
@@ -106,11 +107,18 @@ namespace Garage
 
             sb.AppendLine(menuHeader);
             sb.AppendLine();
-
+            int l = 0;
+            for (int i = firstitemindisplay; i < (firstitemindisplay + 7); i++)
+            {
+                if(menuList.Count() > i)
+                    sb.AppendLine((l + 1) + ". " + menuList[i]);
+                l += 1;
+            }
+            /*
             foreach (string item in menuList)
             {
                 sb.AppendLine(item);
-            }
+            }*/
 
             sb.AppendLine();
             sb.AppendLine(menuFooter);

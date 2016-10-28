@@ -12,7 +12,7 @@ namespace Garage
     class GarageCreator
     {
         MenuCreator menuCreator;
-
+        public static int GarageCount = 0;
         public GarageCreator()
         {
             menuCreator = new MenuCreator(this);
@@ -21,6 +21,7 @@ namespace Garage
 
         public Garage<T> createGarage<T>(string name, int spaces) where T:Vehicle
         {
+            GarageCount += 1;
             return new Garage<T>(name, spaces, menuCreator);
         }
 

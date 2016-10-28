@@ -18,7 +18,7 @@ namespace Garage
         public int spaces { get; set; }
         public string Name;
         public static List<Garage<T>> GaragesList = new List<Garage<T>>();
-
+        Menu mainmenu;
         public Garage() { }
 
         public Garage(string name, int Spaces, MenuCreator menuCreator)
@@ -27,7 +27,7 @@ namespace Garage
             Name = name;
             spaces = Spaces;
             GaragesList.Add(this);
-            menuCreator.CreateMenu(this);
+            mainmenu = menuCreator.CreateMenu(this);
         }
 
         public void addToGarage<S>(string color, int wheels, int regnr) where S:Vehicle
@@ -35,6 +35,7 @@ namespace Garage
             if (VehicleList.Count() < spaces)
             {
                 VehicleList.Add((T)Activator.CreateInstance(typeof(S), color, wheels, regnr));
+                mainmenu.setHeader(string.Format("Welcome to the {0} admin panel!\nGarage Type: {1} - size:{2} - Used:{3} - Available:{4}", this.Name, typeof(T).Name.ToString(), this.spaces, this.VehicleList.Count(), (this.spaces - this.VehicleList.Count())));
                 Menu.ActiveMenu.ErrorMessage = "Success!";
             }
             else
