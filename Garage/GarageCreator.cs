@@ -39,18 +39,15 @@ namespace Garage
                     foreach (var garage in Vehiclelist1.Descendants("Garage"))
                     {
                         MethodInfo creategarage = typeof(GarageCreator).GetMethod("createGarage");
-                        ParameterInfo[] creategarageparameters = creategarage.GetParameters();
+
                         creategarage = creategarage.MakeGenericMethod(new Type[] { Type.GetType((string)garage.Attribute("Type").Value).GetGenericArguments().FirstOrDefault() });
+
                         object garage1 = creategarage.Invoke(this, new object[] { (string)garage.Attribute("Name").Value, int.Parse(garage.Attribute("Space").Value) });
 
-                        
-                        PropertyInfo vehiclelist = garage1.GetType().GetProperty("VehicleList");
                         MethodInfo addtogarage = garage1.GetType().GetMethod("addToGarage");
-                        ParameterInfo[] addtogarageParameters = addtogarage.GetParameters();
 
 
                         Type type = garage1.GetType().GetGenericArguments().FirstOrDefault();
-
                         addtogarage = addtogarage.MakeGenericMethod(new Type[] { type });
 
                         foreach (var vehicle in garage.Descendants("Vehicle"))

@@ -116,7 +116,6 @@ namespace Garage
             MainMenu.addMethod("3", () =>
             {
                 Menu.ActiveMenu = searchMenu;
-                searchMenu.clearList();
             });//SearchForVehicle);
             MainMenu.addMethod("4", () => Menu.ActiveMenu = GarageSizeMenu);
             MainMenu.addMethod("0", () => Menu.ActiveMenu = BaseMenu);
@@ -149,13 +148,17 @@ namespace Garage
             });
             VehicleListMenu.setdefaultMethod( () => remove(MainGarage, VehicleListMenu));
             
-            searchMenu.setHeader(string.Format("Enter search term: (type -1 to remove vehicle number 1 and so on)\nYou can search for types (car/buss/boat/plane/motorcycle)\n\n   {0, -10}{1, -15}{2, -10}{3}", "Type", "RegNr", "Color", "Wheels"));
+            searchMenu.setHeader(string.Format("Enter search term: (type -1 to remove vehicle number 1 and so on)\nYou can search for color, wheels, regnr\n\n   {0, -10}{1, -15}{2, -10}{3}", "Type", "RegNr", "Color", "Wheels"));
             searchMenu.setFooter("8. Previews Page.\t\t9. Next Page.\n0. Back.");
             searchMenu.addMethod("8", searchMenu.PreviewsPage);
             searchMenu.addMethod("9", searchMenu.NextPage);
 
             searchMenu.setdefaultMethod(() => Search(MainGarage, searchMenu));
-            searchMenu.addMethod("0", () => gotoMainMenu(MainGarage, MainMenu));
+            searchMenu.addMethod("0", () => {
+                gotoMainMenu(MainGarage, MainMenu);
+                searchMenu.clearList();
+                MainGarage.SearchResult.Clear();
+            });
 
             AddVehicleMenu.setHeader("Enter vehicle info: (Color Wheels Regnr)");
             AddVehicleMenu.setFooter("0. Back.");
@@ -217,7 +220,11 @@ namespace Garage
             // User inputs only 1 thing
             if (Menu.ActiveMenu.userinput.Count() == 1)
             {
+                int number1; // temp
                 int number;
+                number = int.TryParse(Menu.ActiveMenu.userinput[0], out number1) ? number1 : 0;
+
+                
                 int.TryParse(Menu.ActiveMenu.userinput[0], out number);
 
                 if (number > 0)
@@ -234,57 +241,94 @@ namespace Garage
                     int newnumber = number - number - number;
                     if (menu.menuList.Count > 0)
                     {
-                        garage.removeFromGarage<T>(garage.SearchResult[(menu.firstitemindisplay + newnumber) - 1]);
-                        garage.SearchResult.RemoveAt((menu.firstitemindisplay + newnumber) - 1);
+                        if(newnumber > 0 && newnumber <= 7)
+                        {
+                            if (garage.SearchResult.Count > ((menu.firstitemindisplay + newnumber) - 1))
+                            {
+                                garage.removeFromGarage<T>(garage.SearchResult[(menu.firstitemindisplay + newnumber) - 1]);
+                                garage.SearchResult.RemoveAt((menu.firstitemindisplay + newnumber) - 1);
+                            }
+                            else
+                            {
+                                menu.ErrorMessage = "Invalid input!";
+                            }
+                        }
+                        else
+                        {
+                            menu.ErrorMessage = "Invalid input!";
+                        }
                     }
                 }
             }
             else if(Menu.ActiveMenu.userinput.Count() == 2) // user inputs 2 things
             {
-                int number = 0;
-                List<string> userinput = new List<string>();
+                int number1;
+                int number;
+                number = int.TryParse(Menu.ActiveMenu.userinput[0], out number1) ? number1 : int.TryParse(Menu.ActiveMenu.userinput[1], out number1) ? number1 : 0;
+                string userinput = "";
+                //List<string> userinput = new List<string>();
                 foreach (string input in Menu.ActiveMenu.userinput) // put the input in the respective variables for later usage
                 {
-                    if (number == 0)
-                        if(!int.TryParse(input, out number))
-                            userinput.Add(input);
+                    if (!int.TryParse(input, out number1))
+                        userinput = (input);
                 }
 
-                if (number > 0 && userinput.Count() == 1) // if it's a number and a string
+                if (number > 0 && userinput != "") // if it's a number and a string
                 {
-                    if (garage.SearchResult.Count == 0)
-                    {
-                        garage.SearchResult = garage.searchVehicle<T>(number, userinput[0]);
-                    }
+                    garage.SearchResult = garage.searchVehicle<T>(number, userinput);
                 }
-                else if (number == 0) // if it's 2 strings
+                else if(number > 0 && number1 > 0) // if it's 2 numbers
                 {
-                    garage.SearchResult = garage.searchVehicle<T>(userinput[0], userinput[1]);
+                    garage.SearchResult = garage.searchVehicle<T>(number, number1);
                 }
-                else if(number < 0) // if it's a remove from garage from the search menu
+            }
+            else if (Menu.ActiveMenu.userinput.Count() == 3) // user inputs 3 things
+            {
+                int number1;
+                int tempnumber = 0;
+                int number;
+                number = int.TryParse(Menu.ActiveMenu.userinput[0], out number1) ? number1 : int.TryParse(Menu.ActiveMenu.userinput[1], out number1) ? number1 : int.TryParse(Menu.ActiveMenu.userinput[2], out number1) ? number1 : 0;
+                string userinput = "";
+                //List<string> userinput = new List<string>();
+                foreach (string input in Menu.ActiveMenu.userinput) // put the input in the respective variables for later usage
                 {
-                    int newnumber = number - number - number;
-                    if (garage.SearchResult.Count > 0)
-                    {
-                        garage.removeFromGarage<T>(garage.SearchResult[(menu.firstitemindisplay + newnumber) - 1]);
-                        garage.SearchResult.RemoveAt((menu.firstitemindisplay + newnumber) - 1);
-                    }
+                    if (!int.TryParse(input, out number1))
+                        userinput = (input);
+                    else
+                        tempnumber = int.Parse(input);
+                }
+
+                if (number > 0 && tempnumber > 0 && userinput != "")
+                {
+                    garage.SearchResult = garage.searchVehicle<T>(userinput, number, tempnumber);
                 }
             }
 
             if (garage.SearchResult != null)
             {
-                menu.clearList();
-                //menu.setList(searchResult);
-                int i = 1;
-                foreach (T V in garage.SearchResult)
+                if(garage.SearchResult.Count > 0)
                 {
-                    menu.addItem(V.ToString());
-                    i += 1;
+                    menu.clearList();
+                    //menu.setList(searchResult);
+                    int i = 1;
+                    foreach (T V in garage.SearchResult)
+                    {
+                        menu.addItem(V.ToString());
+                        i += 1;
+                    }
+                }
+                else
+                {
+                    menu.clearList();
+                    menu.ErrorMessage = "No results!";
                 }
             }
             else
+            {
                 menu.clearList();
+                menu.ErrorMessage = "No results!";
+            }
+                
             //Menu.ActiveMenu = menu;
         }
 

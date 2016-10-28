@@ -29,12 +29,7 @@ namespace Garage
             GaragesList.Add(this);
             mainmenu = mc.CreateMenu(this);
         }
-        /*
-        public Garage()
-        {
-            VehicleList = new List<T>();
-        }
-        */
+
         public void addToGarage<S>(string color, int wheels, int regnr) where S:Vehicle
         {
             if (VehicleList.Count() < spaces)
@@ -82,7 +77,7 @@ namespace Garage
                 else
                 {
                     Menu.ActiveMenu.ErrorMessage = "Nothing found!";
-                    if(SearchResult.Count()>0)
+                    if (SearchResult != null)
                         SearchResult.Clear();
                     return null;
                 }
@@ -100,16 +95,15 @@ namespace Garage
             else
             {
                 Menu.ActiveMenu.ErrorMessage = "Nothing found!";
-                if (SearchResult.Count() > 0)
+                if (SearchResult != null)
                     SearchResult.Clear();
                 return null;
             }
         }
 
-        public List<T> searchVehicle<S>(int input1, string input2) where S : Vehicle
+        public List<T> searchVehicle<S>(int input1, int input2) where S : Vehicle
         {
-            input2 = input2.First().ToString().ToUpper() + input2.Substring(1);
-            IEnumerable<T> Vehicles = VehicleList.Where(V => V.GetType().ToString().Contains(input2) && V.Wheels == input1);
+            IEnumerable<T> Vehicles = VehicleList.Where(V => V.Wheels == input1 && V.REGNR.ToString().Contains(input2.ToString()));
 
             if (Vehicles.Count() > 0)
             {
@@ -117,9 +111,7 @@ namespace Garage
             }
             else
             {
-                input2 = input2.First().ToString().ToLower() + input2.Substring(1);
-
-                Vehicles = VehicleList.Where(V => V.Wheels == input1 && V.Color.Contains(input2));
+                Vehicles = VehicleList.Where(V => V.REGNR.ToString().Contains(input1.ToString()) && V.Wheels == input2);
                 if (Vehicles.Count() > 0)
                 {
                     return Vehicles.ToList();
@@ -127,41 +119,25 @@ namespace Garage
                 else
                 {
                     Menu.ActiveMenu.ErrorMessage = "Nothing found!";
-                    if (SearchResult.Count() > 0)
+                    if (SearchResult != null)
                         SearchResult.Clear();
                     return null;
                 }
             }
         }
 
-        public List<T> searchVehicle<S>(string input1, string input2) where S : Vehicle
+        public List<T> searchVehicle<S>(int input1, string input2) where S : Vehicle
         {
-            input2 = input2.First().ToString().ToUpper() + input2.Substring(1);
-            IEnumerable<T> Vehicles = VehicleList.Where(V => V.GetType().ToString().Contains(input2) && V.Color.Contains(input1));
+            input2 = input2.ToLower();
+            IEnumerable<T> Vehicles = VehicleList.Where(V => V.Wheels == input1 && V.Color.ToLower().Contains(input2));
 
             if (Vehicles.Count() > 0)
             {
-                input2 = input2.First().ToString().ToUpper() + input2.Substring(1);
-
-                Vehicles = VehicleList.Where(V => V.GetType().ToString().Contains(input2) && V.Color.Contains(input1));
-                if (Vehicles.Count() > 0)
-                {
-                    return Vehicles.ToList();
-                }
-                else
-                {
-                    Menu.ActiveMenu.ErrorMessage = "Nothing found!";
-                    if (SearchResult.Count() > 0)
-                        SearchResult.Clear();
-                    return null;
-                }
+                return Vehicles.ToList();
             }
             else
             {
-                input2 = input2.First().ToString().ToLower() + input2.Substring(1);
-                input1 = input1.First().ToString().ToUpper() + input1.Substring(1);
-
-                Vehicles = VehicleList.Where(V => V.GetType().ToString().Contains(input1) && V.Color.Contains(input2));
+                Vehicles = VehicleList.Where(V => V.REGNR.ToString().Contains(input1.ToString()) && V.Color.ToLower().Contains(input2));
                 if (Vehicles.Count() > 0)
                 {
                     return Vehicles.ToList();
@@ -169,12 +145,39 @@ namespace Garage
                 else
                 {
                     Menu.ActiveMenu.ErrorMessage = "Nothing found!";
-                    if (SearchResult.Count() > 0)
+                    if (SearchResult != null)
                         SearchResult.Clear();
                     return null;
                 }
             }
         }
+
+        public List<T> searchVehicle<S>(string input1, int input2, int input3) where S : Vehicle
+        {
+            input1 = input1.ToLower();
+            IEnumerable<T> Vehicles = VehicleList.Where(V => V.Wheels == input2 && V.Color.ToLower().Contains(input1) && V.REGNR.ToString().Contains(input3.ToString()));
+
+            if (Vehicles.Count() > 0)
+            {
+                return Vehicles.ToList();
+            }
+            else
+            {
+                Vehicles = VehicleList.Where(V => V.Wheels == input3 && V.Color.ToLower().Contains(input1) && V.REGNR.ToString().Contains(input2.ToString()));
+                if (Vehicles.Count() > 0)
+                {
+                    return Vehicles.ToList();
+                }
+                else
+                {
+                    Menu.ActiveMenu.ErrorMessage = "Nothing found!";
+                    if (SearchResult != null)
+                        SearchResult.Clear();
+                    return null;
+                }
+            }
+        }
+
         public IEnumerator<Vehicle> GetEnumerator() 
         {
             foreach (Vehicle V in VehicleList)
