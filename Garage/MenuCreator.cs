@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -13,39 +14,88 @@ namespace Garage
     {
         public Menu BaseMenu = new Menu();
         public Menu GarageCreateMenu = new Menu();
+        string[] tempgarageinfo = new string[3] { "", "", ""};
 
-        List<List<Menu>> MenuList = new List<List<Menu>>();
-                
+        List <List<Menu>> MenuList = new List<List<Menu>>();
+        
         public MenuCreator(GarageCreator garageCreator)
         {
+            BaseMenu.isPagedMenu = true;
             BaseMenu.setHeader("Garage List:\n type \"new\" to create a new garage!");
-            BaseMenu.setFooter("8. Previews Page.\t\t9. Next Page.\n0. Exit");
+            BaseMenu.setFooter("\u25c4 Previews Page\t\tNext Page \u25ba\nESC. Exit");
             BaseMenu.addMethod("new", () => Menu.ActiveMenu = GarageCreateMenu);
-            BaseMenu.addMethod("8", BaseMenu.PreviewsPage);
-            BaseMenu.addMethod("9", BaseMenu.NextPage);
-            BaseMenu.addMethod("0", ExitApp);
+            BaseMenu.addMethod("Escape", ExitApp);
             BaseMenu.setdefaultMethod(gotoMenuForGarage);
+            BaseMenu.ViewInput = true;
 
-            GarageCreateMenu.setHeader("Welcome to Garage!\nCreate your Garage by selecting a type\nand entering how many spaces are available and name it:\nExample: \"4 60 MyCarsGarage\"");
-            GarageCreateMenu.addItem("1. AirPlanes");
-            GarageCreateMenu.addItem("2. Boats");
-            GarageCreateMenu.addItem("3. Busses");
-            GarageCreateMenu.addItem("4. Cars");
-            GarageCreateMenu.addItem("5. Motorcycles");
-            GarageCreateMenu.setFooter("0. Back");
-
-            GarageCreateMenu.addMethod("0", () => Menu.ActiveMenu = BaseMenu);
+            GarageCreateMenu.setHeader("Welcome to Garage!\nCreate your Garage by selecting a type\n");
+            GarageCreateMenu.addItem("AirPlanes");
+            GarageCreateMenu.addItem("Boats");
+            GarageCreateMenu.addItem("Busses");
+            GarageCreateMenu.addItem("Cars");
+            GarageCreateMenu.addItem("Motorcycles");
+            GarageCreateMenu.setFooter("\u25c4 Reset info\t\tNext Step \u25ba\nESC. Back");
+            GarageCreateMenu.addMethod("LeftArrow", () => {
+                for (int i = 0; i < tempgarageinfo.Length; i++)
+                {
+                    tempgarageinfo[i] = "";
+                }
+            });
+            GarageCreateMenu.addMethod("RightArrow", buildGarage);
+            GarageCreateMenu.addMethod("Escape", () => Menu.ActiveMenu = BaseMenu);
             GarageCreateMenu.setdefaultMethod(() => creategarage(garageCreator));
+            GarageCreateMenu.ViewInput = true;
+        }
+
+        private void buildGarage()
+        {
+            tempgarageinfo[0] = (GarageCreateMenu.userSelection + 1).ToString(); // type
+            int number = 0;
+
+            if (tempgarageinfo[1] == "") // name
+            {
+                if (GarageCreateMenu.userinput != null)
+                {
+                    tempgarageinfo[1] = GarageCreateMenu.userinput[0];
+                    GarageCreateMenu.clearuserinput();
+                    GarageCreateMenu.ErrorMessage = "Please enter the size!";
+                }
+                else
+                    GarageCreateMenu.ErrorMessage = "Please enter the name!";
+            }
+            else if (tempgarageinfo[2] == "") // size
+            {
+                if (GarageCreateMenu.userinput != null)
+                {
+                    if (int.TryParse(GarageCreateMenu.userinput[0], out number))
+                    {
+                        tempgarageinfo[2] = number.ToString();
+                        GarageCreateMenu.clearuserinput();
+                        GarageCreateMenu.ErrorMessage = "Press Enter to Create!";
+                    }
+                    else
+                        GarageCreateMenu.ErrorMessage = "Please enter the size!";
+                }
+            }
+            else if(tempgarageinfo[0] != "" && tempgarageinfo[1] != "" && tempgarageinfo[2] != "")
+            {
+                GarageCreateMenu.ErrorMessage = "Press Enter to Create!";
+            }
+            /*
+            tempgarageinfo.name = "";
+            tempgarageinfo.size = 1;
+            tempgarageinfo.type = 1;*/
+
         }
 
         private void creategarage(GarageCreator garageCreator)
         {
             int number = 0;
             int number2 = 0;
-            if (GarageCreateMenu.userinput.Count() < 3)
-                GarageCreateMenu.ErrorMessage = "Please chose the type, spaces available and name it!";
-            else if (!int.TryParse(GarageCreateMenu.userinput[0], out number) || !int.TryParse(GarageCreateMenu.userinput[1], out number2))
-                GarageCreateMenu.ErrorMessage = "Numbers only please!";
+            if (tempgarageinfo[0] == "")
+                GarageCreateMenu.ErrorMessage = "Please type the name!";
+            else if (!int.TryParse(tempgarageinfo[0], out number) || !int.TryParse(tempgarageinfo[2], out number2))
+                GarageCreateMenu.ErrorMessage = "You entered a string insdead of number in the size field!";
             else if (number == 0 || number2 == 0)
                 GarageCreateMenu.ErrorMessage = "Really 0?";
             else
@@ -53,39 +103,45 @@ namespace Garage
                 switch (number)
                 {
                     case 1:
-                        garageCreator.createGarage<Airplane>(GarageCreateMenu.userinput[2], number2);
-                        GarageCreateMenu.ErrorMessage =  "success";
+                        garageCreator.createGarage<Airplane>(tempgarageinfo[1], number2);
+                        GarageCreateMenu.ErrorMessage = "Created a New Airplanes Garage!";
                         break;
                     case 2:
-                        garageCreator.createGarage<Boat>(GarageCreateMenu.userinput[2], number2);
-                        GarageCreateMenu.ErrorMessage = "success";
+                        garageCreator.createGarage<Boat>(tempgarageinfo[1], number2);
+                        GarageCreateMenu.ErrorMessage = "Created a New Boats Garage!";
                         break;
                     case 3:
-                        garageCreator.createGarage<Buss>(GarageCreateMenu.userinput[2], number2);
-                        GarageCreateMenu.ErrorMessage = "success";
+                        garageCreator.createGarage<Buss>(tempgarageinfo[1], number2);
+                        GarageCreateMenu.ErrorMessage = "Created a New Busses Garage!";
                         break;
                     case 4:
-                        garageCreator.createGarage<Car>(GarageCreateMenu.userinput[2], number2);
-                        GarageCreateMenu.ErrorMessage = "success";
+                        garageCreator.createGarage<Car>(tempgarageinfo[1], number2);
+                        GarageCreateMenu.ErrorMessage = "Created a New Cars Garage!";
                         break;
                     case 5:
-                        garageCreator.createGarage<Motorcycle>(GarageCreateMenu.userinput[2], number2);
-                        GarageCreateMenu.ErrorMessage = "success";
+                        garageCreator.createGarage<Motorcycle>(tempgarageinfo[1], number2);
+                        GarageCreateMenu.ErrorMessage = "Created a New Motorcycles Garage!";
                         break;
                     default:
-                        GarageCreateMenu.ErrorMessage = "Numbers from the list please!";
+                        //GarageCreateMenu.ErrorMessage = "Numbers from the list please!";
+                        //tempgarageinfo.Clear();
                         break;
                 }
+            }
+
+            for (int i = 0; i < tempgarageinfo.Length; i++)
+            {
+                tempgarageinfo[i] = "";
             }
         }
 
         public void gotoMenuForGarage() // garage specific menus created when the garage was created
         {
-            int index = 0;
-            int.TryParse(BaseMenu.userinput[0], out index);
+            int index = Menu.ActiveMenu.userSelection;
+            //int.TryParse(BaseMenu.userinput[0], out index);
             if(MenuList.Count >= (index + BaseMenu.firstitemindisplay))
             {
-                Menu.ActiveMenu = MenuList[(index + BaseMenu.firstitemindisplay) - 1][0];
+                Menu.ActiveMenu = MenuList[(index + BaseMenu.firstitemindisplay)][0];
 
             }
 
@@ -105,24 +161,19 @@ namespace Garage
             BaseMenu.addItem(MainGarage.Name);
 
             MainMenu.setHeader(string.Format("Welcome to the {0} admin panel!\nGarage Type: {1} - size:{2} - Used:{3} - Available:{4}", MainGarage.Name, typeof(T).Name.ToString(), MainGarage.spaces, getVehicleList(MainGarage).Count(), (MainGarage.spaces - getVehicleList(MainGarage).Count())));
-            MainMenu.addItem("1. Add a Vehicle.");
-            MainMenu.addItem("2. View vehicles and manage them.");
-            MainMenu.addItem("3. Search for Vehicle.");
-            MainMenu.addItem("4. Change Garage size.");
-            MainMenu.addItem("0. Back.");
+            MainMenu.addItem("Add a Vehicle.");
+            MainMenu.addItem("View vehicles and manage them.");
+            MainMenu.addItem("Search for Vehicle.");
+            MainMenu.addItem("Change Garage size.");
+            MainMenu.setFooter("ESC. Back.");
 
-            MainMenu.addMethod("1", () => Menu.ActiveMenu = AddVehicleMenu);
-            MainMenu.addMethod("2", () => ViewVehicleList(MainGarage, VehicleListMenu));
-            MainMenu.addMethod("3", () =>
-            {
-                Menu.ActiveMenu = searchMenu;
-            });//SearchForVehicle);
-            MainMenu.addMethod("4", () => Menu.ActiveMenu = GarageSizeMenu);
-            MainMenu.addMethod("0", () => Menu.ActiveMenu = BaseMenu);
+            MainMenu.setdefaultMethod(() => NavigateThrewMenu(MainGarage, menulistofgarage));
+            MainMenu.addMethod("Escape", () => Menu.ActiveMenu = BaseMenu);
+
 
             GarageSizeMenu.setHeader("Type a number to change the garage size:");
-            GarageSizeMenu.setFooter("0. Back.");
-            GarageSizeMenu.addMethod("0", () => gotoMainMenu(MainGarage, MainMenu));
+            GarageSizeMenu.setFooter("ESC. Back.");
+            GarageSizeMenu.addMethod("Escape", () => gotoMainMenu(MainGarage, MainMenu));
             GarageSizeMenu.setdefaultMethod(() => { 
                     int number = 0;
                     if(!int.TryParse(GarageSizeMenu.userinput[0], out number))
@@ -134,42 +185,70 @@ namespace Garage
                         Menu.ActiveMenu = MainMenu;
                     }
                 });
+            GarageSizeMenu.ViewInput = true;
 
-            VehicleListMenu.setFooter("8. Previews Page.\t\t9. Next Page.\n0. Back.");
-            VehicleListMenu.addMethod("0", () => gotoMainMenu(MainGarage, MainMenu));
-            VehicleListMenu.addMethod("8", () => {
-                VehicleListMenu.PreviewsPage();
+            VehicleListMenu.isPagedMenu = true;
+            VehicleListMenu.setFooter("\u25c4 Previews Page\t\tNext Page \u25ba\nESC. Exit");
+            VehicleListMenu.addMethod("Escape", () => gotoMainMenu(MainGarage, MainMenu));
+            VehicleListMenu.addMethod("LeftArrow", () => {
                 ViewVehicleList(MainGarage, VehicleListMenu);
             });
-            VehicleListMenu.addMethod("9", () =>
+            VehicleListMenu.addMethod("RightArrow", () =>
             {
-                VehicleListMenu.NextPage();
                 ViewVehicleList(MainGarage, VehicleListMenu);
             });
-            VehicleListMenu.setdefaultMethod( () => remove(MainGarage, VehicleListMenu));
+            VehicleListMenu.addMethod("Enter", () =>
+            {
+                remove(MainGarage, VehicleListMenu);
+                ViewVehicleList(MainGarage, VehicleListMenu);
+            });
             
-            searchMenu.setHeader(string.Format("Enter search term: (type -1 to remove vehicle number 1 and so on)\nYou can search for color, wheels, regnr\n\n   {0, -10}{1, -15}{2, -10}{3}", "Type", "RegNr", "Color", "Wheels"));
-            searchMenu.setFooter("8. Previews Page.\t\t9. Next Page.\n0. Back.");
-            searchMenu.addMethod("8", searchMenu.PreviewsPage);
-            searchMenu.addMethod("9", searchMenu.NextPage);
-
+            searchMenu.isPagedMenu = true;
+            searchMenu.setHeader(string.Format("Enter search term:\tYou can search for color, wheels, regnr\nPress Enter to remove selected vehicle!\n\n   {0, -10}{1, -15}{2, -10}{3}", "Type", "RegNr", "Color", "Wheels"));
+            searchMenu.setFooter("\u25c4 Previews Page\t\tNext Page \u25ba\nESC. Exit");
+            searchMenu.ForceMethod = true;
             searchMenu.setdefaultMethod(() => Search(MainGarage, searchMenu));
-            searchMenu.addMethod("0", () => {
+            searchMenu.addMethod("Escape", () => {
                 gotoMainMenu(MainGarage, MainMenu);
                 searchMenu.clearList();
-                MainGarage.SearchResult.Clear();
+                if(MainGarage.SearchResult != null)
+                    MainGarage.SearchResult.Clear();
             });
+            searchMenu.addMethod("Enter", () => remove(MainGarage, searchMenu));
+            searchMenu.ViewInput = true;
 
             AddVehicleMenu.setHeader("Enter vehicle info: (Color Wheels Regnr)");
-            AddVehicleMenu.setFooter("0. Back.");
-            AddVehicleMenu.addMethod("0", () => gotoMainMenu(MainGarage, MainMenu));
-            AddVehicleMenu.setdefaultMethod(()=>addvehicle(MainGarage));
+            AddVehicleMenu.setFooter("ESC. Back.");
+            AddVehicleMenu.addMethod("Escape", () => gotoMainMenu(MainGarage, MainMenu));
+            AddVehicleMenu.addMethod("Enter", () => addvehicle(MainGarage));
+            AddVehicleMenu.setdefaultMethod(()=> addvehicleCheck(MainGarage));
+            AddVehicleMenu.ForceMethod = true;
+            AddVehicleMenu.ViewInput = true;
 
             return MainMenu;
         }
 
+        private void NavigateThrewMenu<T>(Garage<T> garage, List<Menu> menulistofgarage) where T : Vehicle
+        {
+            Menu MainMenu = menulistofgarage[0];
+            switch(MainMenu.userSelection)
+            {
+                case 0:
+                    Menu.ActiveMenu = menulistofgarage[3];
+                    break;
+                case 1:
+                    ViewVehicleList(garage, menulistofgarage[1]);
+                    break;
+                case 2:
+                    Menu.ActiveMenu = menulistofgarage[2];
+                    break;
+                case 3:
+                    Menu.ActiveMenu = menulistofgarage[4];
+                    break;
+            }
+        }
 
-        private void addvehicle<T>(Garage<T> garage) where T:Vehicle
+        private void addvehicleCheck<T>(Garage<T> garage) where T:Vehicle
         {
             if(Menu.ActiveMenu.userinput.Length > 2)
             {
@@ -180,7 +259,31 @@ namespace Garage
 
 
                 if (wheels > 0 && regnr > 0 && wheels < 99)
+                    Menu.ActiveMenu.ErrorMessage = "Valid Input!"; 
+                else
+                    Menu.ActiveMenu.ErrorMessage = "Invalid Input!";
+            }
+            else
+            {
+                Menu.ActiveMenu.ErrorMessage = "Invalid Input!";
+            }
+        }
+
+        private void addvehicle<T>(Garage<T> garage) where T : Vehicle
+        {
+            if (Menu.ActiveMenu.userinput.Length > 2)
+            {
+                int wheels;
+                int.TryParse(Menu.ActiveMenu.userinput[1], out wheels);
+                int regnr;
+                int.TryParse(Menu.ActiveMenu.userinput[2], out regnr);
+
+
+                if (wheels > 0 && regnr > 0 && wheels < 99)
+                {
                     garage.addToGarage<T>(Menu.ActiveMenu.userinput[0], wheels, regnr);
+                    Menu.ActiveMenu.ErrorMessage = "Success!!!";
+                }
                 else
                     Menu.ActiveMenu.ErrorMessage = "Invalid Input!";
             }
@@ -192,17 +295,20 @@ namespace Garage
 
         private void remove<T>(Garage<T> garage, Menu menu) where T:Vehicle
         {
-            int number;
-            int.TryParse(Menu.ActiveMenu.userinput[0], out number);
-            if (number > 0 && number < 7)
+            int number = menu.userSelection;
+            //int.TryParse(Menu.ActiveMenu.userinput[0], out number);
+            
+            if (number >= 0 && number < 7)
             {
-                if (garage.VehicleList.Count() > 0 && number <= garage.VehicleList.Count())
+                if (garage.VehicleList.Count() > 0 && number < garage.VehicleList.Count())
                 {
-                    if (garage.VehicleList.Count() >= (menu.firstitemindisplay + number))
+                    if (garage.VehicleList.Count() >= (menu.firstitemindisplay + number) + 1)
                     {
-                        garage.removeFromGarage<T>(garage.VehicleList[(menu.firstitemindisplay + number) - 1]);
-                        menu.removeFromList((number) - 1);
-                        ViewVehicleList(garage, menu);
+                        garage.removeFromGarage<T>(garage.VehicleList[(menu.firstitemindisplay + number)]);
+                        menu.removeFromList((menu.firstitemindisplay + number));
+                        //ViewVehicleList(garage, menu);
+                        if (menu.menuList.Count <= (menu.firstitemindisplay + number))
+                            menu.userSelection -= 1;
                     }
                     else
                         menu.ErrorMessage = "Invalid input!";

@@ -15,12 +15,38 @@ namespace Garage
         static void Main(string[] args)
         {
             new GarageCreator();
-            
-            while(true)
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
+
+            while (true)
             {
                 Console.Clear();
-                Console.WriteLine(Menu.ActiveMenu.ToString());
-                Menu.ActiveMenu.input(Console.ReadLine().Trim());
+                string[] output = Menu.ActiveMenu.ToString().Split(new string[] { "COLOR" }, StringSplitOptions.None);
+                for (int i = 0; i < output.Length; i++)
+                {
+                    string s = output[i];
+                    switch(s[0])
+                    {
+                        case '0': // item not selected color
+                            s = s.Remove(0, 1);
+                            break;
+                        case '1': // selected item color
+                            Console.BackgroundColor = ConsoleColor.White;
+                            Console.ForegroundColor = ConsoleColor.Black;
+                            s = s.Remove(0, 1);
+                            break;
+                        case '2': // error color
+                            Console.BackgroundColor = ConsoleColor.DarkRed;
+                            Console.ForegroundColor = ConsoleColor.Black;
+                            s = s.Remove(0, 1);
+                            break;
+                    }
+                    Console.Write(s);
+                    Console.ResetColor();
+                }
+                
+
+                //Console.WriteLine(Menu.ActiveMenu.ToString());
+                Menu.ActiveMenu.input(Console.ReadKey());
             }
         }
     }
